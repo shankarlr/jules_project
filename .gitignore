@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+spark.db
+backend.log
+frontend_dev.log
+frontend.log
+node_modules/
+dist/
+.env
+/home/jules/verification/
