@@ -1,22 +1,24 @@
 import pytest
-from backend.generator import analyze_trend, generate_report
+from backend.generator import market_scout_research, growth_hacker_strategy
 
-def test_analyze_trend():
+def test_market_scout_research():
     title = "AI in Healthcare"
     content = "New AI models are helping doctors diagnose diseases faster."
-    analysis = analyze_trend(title, content)
+    niche, research = market_scout_research(title, content)
 
-    assert "AI" in analysis["title"]
-    assert "High" == analysis["market_potential"]
-    assert "AI" in analysis["description"]
+    assert niche in [
+        "Healthcare AI Diagnostics",
+        "E-commerce Inventory Optimization",
+        "Niche Developer Copilots (GameDev/Blockchain)",
+        "Sustainable Supply Chain tracking",
+        "Remote Team Productivity Automation"
+    ]
+    assert "detected" in research.lower()
 
-def test_generate_report():
-    class MockOpp:
-        def __init__(self, title):
-            self.title = title
+def test_growth_hacker_strategy():
+    niche = "Healthcare AI Diagnostics"
+    research = "Detected high-growth potential."
+    strategy, monetization = growth_hacker_strategy(niche, research)
 
-    opp = MockOpp("Autonomous AI Solution")
-    plan, assets = generate_report(opp)
-
-    assert "# Business Plan: Autonomous AI Solution" in plan
-    assert "logo_prompt" in assets
+    assert "revenue" in monetization.lower()
+    assert len(strategy) > 10

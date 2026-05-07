@@ -1,11 +1,18 @@
-from fastapi import FastAPI, BackgroundTasks, Depends
+from fastapi import FastAPI, BackgroundTasks, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from .database import get_db
 from . import models, worker
+from pydantic import BaseModel
+from datetime import datetime, timedelta, timezone
 import uvicorn
+import os
 
 app = FastAPI(title="Spark Autonomous API")
+
+# In a real app, this would be in an environment variable
+ADMIN_SECRET = os.getenv("ADMIN_SECRET", "spark_secure_secret_2025")
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,6 +21,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class SettingsUpdate(BaseModel):
+    key: str
+    value: str
+
+async def verify_admin(x_admin_secret: str = Header(None)):
+    if x_admin_secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Unauthorized: Invalid Admin Secret")
 
 @app.get("/health")
 def health_check():
@@ -34,7 +49,40 @@ def get_report(opportunity_id: int, db: Session = Depends(get_db)):
 @app.post("/trigger")
 async def trigger_autonomy(background_tasks: BackgroundTasks):
     background_tasks.add_task(worker.run_autonomous_cycle)
-    return {"message": "Autonomous cycle triggered in background"}
+    return {"message": "Autonomous Intelligence Cycle triggered in background"}
+
+@app.get("/revenue/stats")
+def get_revenue_stats(db: Session = Depends(get_db)):
+    total_revenue = db.query(func.sum(models.Revenue.amount)).scalar() or 0
+
+    # Last hour revenue
+    one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+    hourly_revenue = db.query(func.sum(models.Revenue.amount)).filter(models.Revenue.created_at >= one_hour_ago).scalar() or 0
+
+    return {
+        "total_revenue": round(total_revenue, 2),
+        "hourly_revenue": round(hourly_revenue, 2)
+    }
+
+@app.get("/agents")
+def get_agents(db: Session = Depends(get_db)):
+    return db.query(models.AgentStatus).all()
+
+@app.get("/settings")
+def get_settings(db: Session = Depends(get_db)):
+    settings = db.query(models.GlobalSettings).all()
+    return {s.key: s.value for s in settings}
+
+@app.patch("/settings", dependencies=[Depends(verify_admin)])
+def update_settings(update: SettingsUpdate, db: Session = Depends(get_db)):
+    setting = db.query(models.GlobalSettings).filter(models.GlobalSettings.key == update.key).first()
+    if not setting:
+        setting = models.GlobalSettings(key=update.key, value=update.value)
+        db.add(setting)
+    else:
+        setting.value = update.value
+    db.commit()
+    return {"message": f"Global Setting '{update.key}' updated successfully"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
