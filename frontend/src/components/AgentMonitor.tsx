@@ -26,26 +26,32 @@ export const AgentMonitor: React.FC = () => {
       const response = await fetch(`${API_BASE}/agents`);
       const data = await response.json();
       setAgents(data);
-
-      // Check for new tasks and add to history
-      data.forEach((agent: AgentStatus) => {
-        if (agent.current_task !== lastTaskRef.current[agent.name]) {
-          setHistory(prev => [{
-            agentName: agent.name,
-            task: agent.current_task,
-            time: new Date().toLocaleTimeString()
-          }, ...prev].slice(0, 10)); // Keep last 10 actions
-          lastTaskRef.current[agent.name] = agent.current_task;
-        }
-      });
     } catch (error) {
       console.error('Error fetching agents:', error);
     }
   };
 
+  const fetchAuditLogs = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/audit`);
+      const data = await response.json();
+      setHistory(data.map((log: any) => ({
+        agentName: log.agent_name,
+        task: log.action,
+        time: new Date(log.created_at).toLocaleTimeString()
+      })));
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+    }
+  };
+
   useEffect(() => {
     fetchAgents();
-    const interval = setInterval(fetchAgents, 5000); // Update every 5s
+    fetchAuditLogs();
+    const interval = setInterval(() => {
+      fetchAgents();
+      fetchAuditLogs();
+    }, 5000); // Update every 5s
     return () => clearInterval(interval);
   }, []);
 
