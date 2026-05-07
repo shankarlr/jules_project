@@ -8,11 +8,18 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
 import uvicorn
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Spark Autonomous API")
 
-# In a real app, this would be in an environment variable
-ADMIN_SECRET = os.getenv("ADMIN_SECRET", "spark_secure_secret_2025")
+# Security: ADMIN_SECRET must be set in the environment for production
+ADMIN_SECRET = os.getenv("ADMIN_SECRET")
+if not ADMIN_SECRET:
+    logger.warning("ADMIN_SECRET not set in environment. Using default 'dev_secret' for development.")
+    ADMIN_SECRET = "dev_secret"
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,6 +74,10 @@ def get_revenue_stats(db: Session = Depends(get_db)):
 @app.get("/agents")
 def get_agents(db: Session = Depends(get_db)):
     return db.query(models.AgentStatus).all()
+
+@app.get("/audit")
+def get_audit_logs(db: Session = Depends(get_db), limit: int = 20):
+    return db.query(models.AuditLog).order_by(models.AuditLog.created_at.desc()).limit(limit).all()
 
 @app.get("/settings")
 def get_settings(db: Session = Depends(get_db)):

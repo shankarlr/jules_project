@@ -55,3 +55,11 @@ class GlobalSettings(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String, unique=True, index=True)
     value = Column(Text)
+
+class AuditLog(Base):
+    __tablename__ = "audit_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    agent_name = Column(String)
+    action = Column(Text)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

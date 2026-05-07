@@ -3,6 +3,7 @@ import { OpportunityCard } from './components/OpportunityCard';
 import { ReportModal } from './components/ReportModal';
 import { RevenueStream } from './components/RevenueStream';
 import { AgentMonitor } from './components/AgentMonitor';
+import { Configuration } from './components/Configuration';
 import { API_BASE } from './config';
 
 interface Opportunity {
@@ -93,6 +94,7 @@ function App() {
 
         <RevenueStream />
         <AgentMonitor />
+        <Configuration />
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Active Autonomous Pipelines</h2>

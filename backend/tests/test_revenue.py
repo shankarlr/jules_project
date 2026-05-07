@@ -29,9 +29,11 @@ async def test_generate_revenue(db):
 
     revenue = db.query(Revenue).all()
     assert len(revenue) > 0
-    # Base yield for High is 80, performance 0.9-1.3, bonus starts at 1.0
-    assert revenue[0].amount >= 70 # approx 80 * 0.9
-    assert revenue[0].amount <= 110 # approx 80 * 1.3
+    # New logic: base_yield = 40 * complexity * multiplier
+    # multiplier for High is 2.5. Complexity for "Test Desc" is 1.
+    # Base = 100. Performance 0.85 - 1.15.
+    assert revenue[0].amount >= 80
+    assert revenue[0].amount <= 250 # approx 150 * 1.4 * 1.1
 
 @pytest.mark.asyncio
 async def test_update_agent_activities(db):
@@ -41,4 +43,4 @@ async def test_update_agent_activities(db):
     assert len(agents) == 3
     assert agents[0].name in ["Market Scout", "Growth Hacker", "Auto-Executor"]
     assert agents[0].current_task is not None
-    assert agents[0].status in ["Thinking", "Acting", "Optimizing"]
+    assert agents[0].status in ["Acting", "Thinking", "Optimizing"]

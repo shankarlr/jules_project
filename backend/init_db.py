@@ -1,5 +1,5 @@
-from .database import engine, Base
-from . import models
+from backend.database import engine, Base
+from backend import models
 
 def init_db():
     Base.metadata.create_all(bind=engine)
