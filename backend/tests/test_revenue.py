@@ -20,8 +20,8 @@ def db():
 
 @pytest.mark.asyncio
 async def test_generate_revenue(db):
-    # Add a mock opportunity
-    opp = Opportunity(title="Test Opp", description="Test Desc", market_potential="High")
+    # Add a mock opportunity marked as Prime Path
+    opp = Opportunity(title="Test Opp", description="Test Desc", market_potential="High", is_prime_path=1)
     db.add(opp)
     db.commit()
 
