@@ -20,6 +20,9 @@ class Opportunity(Base):
     title = Column(String)
     description = Column(Text)
     market_potential = Column(String)
+    version = Column(Integer, default=1)
+    efficiency_score = Column(Float, default=0.5) # 0.0 to 1.0
+    is_prime_path = Column(Integer, default=0) # 1 for the most focused path
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Report(Base):

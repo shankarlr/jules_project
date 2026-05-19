@@ -39,16 +39,23 @@ async def generate_revenue(db: Session):
         total_prev = db.query(func.sum(Revenue.amount)).scalar() or 0
         optimization_bonus = min(3.0, 1.0 + (total_prev / 10000))
 
+        # Focus revenue generation ONLY on the Prime Path (Single Path requirement)
+        prime_opportunities = [o for o in opportunities if o.is_prime_path == 1]
+
         total_hourly_yield = 0
-        for opp in opportunities:
-            # Complexity-Based Yield logic:
-            # Higher quality trends and more detailed execution roadmaps lead to higher revenue
+        for opp in prime_opportunities:
+            # Learning-Based Yield logic:
+            # Efficiency score and version significantly boost the yield
+            # Single path focus results in compounding returns
             roadmap_complexity = len(opp.description.split("|"))
             market_multiplier = 2.5 if opp.market_potential == "High" else 1.0
 
+            # Agents become more effective at generating revenue as they 'learn' (efficiency increases)
+            learning_multiplier = 1.0 + (opp.efficiency_score * 2.0) + (opp.version * 0.1)
+
             # Aligned with $100-$500/hr target
-            base_yield = 40 * roadmap_complexity * market_multiplier
-            performance = random.uniform(0.85, 1.15)
+            base_yield = 30 * roadmap_complexity * market_multiplier * learning_multiplier
+            performance = random.uniform(0.9, 1.2)
             contribution = base_yield * performance * optimization_bonus
 
             new_revenue = Revenue(
