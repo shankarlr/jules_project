@@ -1,4 +1,5 @@
 from .database import SessionLocal
+from . import models
 from .models import Trend, Opportunity, Report
 import json
 import logging

@@ -84,6 +84,23 @@ def get_settings(db: Session = Depends(get_db)):
     settings = db.query(models.GlobalSettings).all()
     return {s.key: s.value for s in settings}
 
+@app.get("/evolution/code")
+def get_evolved_code():
+    evolution_dir = "backend/evolution"
+    if not os.path.exists(evolution_dir):
+        return []
+
+    files = [f for f in os.listdir(evolution_dir) if f.endswith(".py") and f != "__init__.py"]
+    results = []
+    for f in sorted(files, reverse=True):
+        path = os.path.join(evolution_dir, f)
+        with open(path, "r") as file:
+            results.append({
+                "filename": f,
+                "content": file.read()
+            })
+    return results
+
 @app.patch("/settings", dependencies=[Depends(verify_admin)])
 def update_settings(update: SettingsUpdate, db: Session = Depends(get_db)):
     setting = db.query(models.GlobalSettings).filter(models.GlobalSettings.key == update.key).first()

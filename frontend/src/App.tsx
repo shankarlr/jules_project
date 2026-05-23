@@ -4,6 +4,7 @@ import { ReportModal } from './components/ReportModal';
 import { RevenueStream } from './components/RevenueStream';
 import { AgentMonitor } from './components/AgentMonitor';
 import { Configuration } from './components/Configuration';
+import { CodeEvolution } from './components/CodeEvolution';
 import { API_BASE } from './config';
 
 interface Opportunity {
@@ -94,6 +95,7 @@ function App() {
 
         <RevenueStream />
         <AgentMonitor />
+        <CodeEvolution />
         <Configuration />
 
         <div className="mb-8">

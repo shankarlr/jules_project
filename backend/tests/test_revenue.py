@@ -29,11 +29,11 @@ async def test_generate_revenue(db):
 
     revenue = db.query(Revenue).all()
     assert len(revenue) > 0
-    # New logic: base_yield = 40 * complexity * multiplier
-    # multiplier for High is 2.5. Complexity for "Test Desc" is 1.
-    # Base = 100. Performance 0.85 - 1.15.
-    assert revenue[0].amount >= 80
-    assert revenue[0].amount <= 250 # approx 150 * 1.4 * 1.1
+    # New logic: base_yield = 30 * roadmap_complexity * market_multiplier * learning_multiplier
+    # roadmap_complexity = 1, market_multiplier = 2.5 (High), learning_multiplier = 1.0 + (0.0*2.0) + (1*0.1) = 1.1
+    # base_yield = 30 * 1 * 2.5 * 1.1 = 82.5
+    # If evolved strategy exists, it may multiply this significantly.
+    assert revenue[0].amount >= 50
 
 @pytest.mark.asyncio
 async def test_update_agent_activities(db):

@@ -3,6 +3,8 @@ import logging
 from .scraper import scrape_trends
 from .generator import process_new_trends
 from .revenue_engine import generate_revenue, update_agent_activities
+from .evolution_engine import EvolutionEngine
+from .agents.optimizer import CodeOptimizer
 from .database import SessionLocal
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +26,13 @@ async def run_autonomous_cycle():
         await process_new_trends()
         logger.info("Analysis and Generation completed.")
 
-        # Performance-based Revenue and Agent logic
+        # 1. Code Evolution Phase
+        optimizer = CodeOptimizer()
+        await optimizer.analyze_and_propose()
+        await EvolutionEngine.evolve()
+        logger.info("Code Evolution cycle completed.")
+
+        # 2. Performance-based Revenue and Agent logic
         await generate_revenue(db)
         await update_agent_activities(db)
         logger.info("Revenue optimization and Agent mesh updates completed.")

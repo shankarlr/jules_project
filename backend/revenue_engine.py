@@ -3,6 +3,7 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from .models import Revenue, AgentStatus, Opportunity, AuditLog
+from .evolution_engine import EvolutionEngine
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,9 @@ async def generate_revenue(db: Session):
         # Focus revenue generation ONLY on the Prime Path (Single Path requirement)
         prime_opportunities = [o for o in opportunities if o.is_prime_path == 1]
 
+        # Load the latest evolved strategy code
+        evolved_strategy = EvolutionEngine.get_latest_strategy()
+
         total_hourly_yield = 0
         for opp in prime_opportunities:
             # Learning-Based Yield logic:
@@ -56,7 +60,13 @@ async def generate_revenue(db: Session):
             # Aligned with $100-$500/hr target
             base_yield = 30 * roadmap_complexity * market_multiplier * learning_multiplier
             performance = random.uniform(0.9, 1.2)
-            contribution = base_yield * performance * optimization_bonus
+
+            # APPLY EVOLVED CODE: If a self-written strategy exists, use it to calculate yield
+            if evolved_strategy:
+                logger.info(f"Applying evolved strategy to revenue calculation for {opp.title}...")
+                contribution = evolved_strategy.calculate_yield(base_yield * performance)
+            else:
+                contribution = base_yield * performance * optimization_bonus
 
             new_revenue = Revenue(
                 amount=round(contribution, 2),
